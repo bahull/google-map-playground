@@ -1,28 +1,80 @@
+import React from "react";
 
-import React from 'react';
-import Geolocation from './Geolocation'
-// import MarkerPlace from './MarkerPlace'
-
-import './index.css';
+import "./index.css";
 
 export default class App extends React.Component {
-  constructor(props){
-    super(props)
+  constructor(props) {
+    super(props);
     this.state = {
-      lat: 0,
-      lng: 0
-    }
+      zoom: 13,
+      maptype: "roadmap"
+    };
   }
-  
+  componentDidMount() {
+    let markers = [];
+    let map = new window.google.maps.Map(document.getElementById("map"), {
+      center: { lat: -33.8688, lng: 151.2195 },
+      zoom: 13,
+      mapTypeId: "roadmap"
+    });
 
+    const placeMarkerAndPanTo = (latLng, map) => {
+      var marker = new window.google.maps.Marker({
+        position: latLng,
+        map: map
+      });
+      markers.push(marker);
+      map.panTo(latLng);
+    };
+    map.addListener("click", e => {
+      console.log(e.latLng);
+      if (markers.length < 1) {
+        placeMarkerAndPanTo(e.latLng, map);
+        console.log(e.latLng.lng(), e.latLng.lat());
+        //Allows dev to access the actual clicked coordinates
+      } else {
+        deleteMarkers();
+      }
+    });
+
+    map.addListener("dblclick", e => {
+      console.log("dbl cliced");
+      deleteMarkers();
+    });
+
+    const setMapOnAll = map => {
+      for (let i = 0; i < markers.length; i++) {
+        markers[i].setMap(map);
+      }
+    };
+
+    // Removes the markers from the map, but keeps them in the array.
+    const clearMarkers = () => {
+      setMapOnAll(null);
+    };
+
+    // Shows any markers currently in the array.
+    const showMarkers = () => {
+      setMapOnAll(map);
+    };
+
+    // Deletes all markers in the array by removing references to them.
+    const deleteMarkers = () => {
+      clearMarkers();
+      markers = [];
+    };
+  }
   render() {
-    console.log(window)
-    
+    console.log(this.state, "state");
     return (
-      <div id='app'>
-      <Geolocation />
-      {/* <MarkerPlace /> */}
+      <div id="app">
+        <div id="map" />
+        <div id="pac-container">
+          <input id="pac-input" type="text" placeholder="Enter a location" />
+        </div>
+        <button onClick={this.deleteMarkers}>Delete them</button>
+        <button onClick={() => console.log("hello", () => console.log("no"))} />
       </div>
-    ); 
-  } 
-};
+    );
+  }
+}
